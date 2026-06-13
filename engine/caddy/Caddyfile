@@ -1,0 +1,108 @@
+# =============================================================================
+# manin-ia Engine — Caddyfile
+# =============================================================================
+# All domain values are injected via environment variables passed from
+# docker-compose.yml. No hardcoded domains.
+#
+# Environment variables (set in .env → docker-compose → Caddy):
+#   {$DOMAIN}          — base domain (e.g. example.com)
+#   {$ADMIN_EMAIL}     — email for ACME certificate registration
+#   {$OLLAMA_API_KEY}  — secret key to gate Ollama API access
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Options
+# ---------------------------------------------------------------------------
+{
+	# Email used for Let's Encrypt / ZeroSSL certificate registration
+	email {$ADMIN_EMAIL}
+}
+
+# ---------------------------------------------------------------------------
+# n8n — Workflow Automation UI & Webhooks
+# ---------------------------------------------------------------------------
+# Accessible at https://n8n.{$DOMAIN}
+# No additional auth here — n8n has its own login system.
+n8n.{$DOMAIN} {
+	# Proxy all traffic to the n8n container on its internal port.
+	# flush_interval -1 disables response buffering for real-time streaming
+	# (important for Server-Sent Events used by the n8n UI).
+	reverse_proxy n8n:5678 {
+		flush_interval -1
+	}
+
+	# Security headers — defense-in-depth on top of n8n's own protections
+	header {
+		# HSTS — tell browsers to always use HTTPS (1 year, include subdomains)
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		# Prevent MIME-type sniffing attacks
+		X-Content-Type-Options "nosniff"
+		# Allow n8n to frame itself (needed for its UI) but block third-party framing
+		X-Frame-Options "SAMEORIGIN"
+		# Control how much referrer info leaks to other origins
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}
+
+# ---------------------------------------------------------------------------
+# Ollama — LLM API (protected by API key)
+# ---------------------------------------------------------------------------
+# Accessible at https://ollama.{$DOMAIN}
+# All requests MUST include header: X-API-Key: <OLLAMA_API_KEY>
+# Unauthenticated requests receive 401 Unauthorized.
+ollama.{$DOMAIN} {
+	# -----------------------------------------------------------------------
+	# CORS — Allow the frontend to call the Ollama API from the browser
+	# -----------------------------------------------------------------------
+	# Handle preflight OPTIONS requests so browsers permit cross-origin calls.
+	@preflight method OPTIONS
+	handle @preflight {
+		header {
+			Access-Control-Allow-Origin  "https://{$DOMAIN}"
+			Access-Control-Allow-Methods "GET, POST, OPTIONS"
+			Access-Control-Allow-Headers "Content-Type, X-API-Key"
+			Access-Control-Max-Age       "86400"
+		}
+		respond "" 204
+	}
+
+	# -----------------------------------------------------------------------
+	# API Key Authentication
+	# -----------------------------------------------------------------------
+	# Every non-preflight request must carry a valid X-API-Key header.
+	# If the key doesn't match, Caddy returns 401 before the request
+	# ever reaches Ollama.
+	@unauthorized {
+		not header X-API-Key "{$OLLAMA_API_KEY}"
+	}
+	handle @unauthorized {
+		respond "Unauthorized" 401
+	}
+
+	# -----------------------------------------------------------------------
+	# Reverse Proxy to Ollama
+	# -----------------------------------------------------------------------
+	# flush_interval -1  — stream tokens as they are generated (no buffering)
+	# transport timeouts  — LLM inference on CPU can be very slow; allow up
+	#                       to 1 hour so large prompts don't time out.
+	reverse_proxy ollama:11434 {
+		flush_interval -1
+		transport http {
+			read_timeout  1h
+			write_timeout 1h
+		}
+	}
+
+	# CORS header on actual (non-preflight) responses
+	header {
+		Access-Control-Allow-Origin "https://{$DOMAIN}"
+	}
+
+	# Security headers (same as n8n)
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options    "nosniff"
+		X-Frame-Options           "SAMEORIGIN"
+		Referrer-Policy           "strict-origin-when-cross-origin"
+	}
+}
