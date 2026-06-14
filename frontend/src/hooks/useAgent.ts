@@ -11,8 +11,11 @@ import { settingsStorage } from "@/services/storage";
 export function useAgent() {
   const [activeAgent, setActiveAgentState] = useState<AgentType>("productivity");
 
-  // Load saved agent on mount
+  // Load saved agent on mount.
   useEffect(() => {
+    // Carga inicial desde localStorage: patrón intencional y seguro para
+    // hidratación SSR (el servidor usa el default y el cliente rehidrata).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveAgentState(settingsStorage.getActiveAgent());
   }, []);
 

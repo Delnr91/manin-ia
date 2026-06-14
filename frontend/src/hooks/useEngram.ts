@@ -15,8 +15,11 @@ export function useEngram() {
   const [isSaving, setIsSaving] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load engrams list on mount
+  // Load engrams list on mount.
   useEffect(() => {
+    // Carga inicial desde localStorage: patrón intencional y seguro para
+    // hidratación SSR (el servidor renderiza [] y el cliente rehidrata).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEngrams(engramStorage.listMeta());
   }, []);
 

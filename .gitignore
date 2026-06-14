@@ -1,0 +1,43 @@
+# =============================================================================
+# manin-ia — Root .gitignore (monorepo: frontend/ + engine/)
+# Patterns are non-rooted so they match in any subfolder (frontend/, etc.)
+# =============================================================================
+
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# next.js / build output
+.next/
+out/
+build/
+dist/
+
+# testing / coverage
+coverage/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# secrets & environment (NEVER commit real secrets)
+.env
+.env.*
+!.env.example
+
+# engine: persisted runtime data / certs
+engine/**/data/
+engine/**/*.local
+
+# logs
+*-debug.log*
+*.log
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.pem
+
+# vercel
+.vercel

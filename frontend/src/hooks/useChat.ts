@@ -3,7 +3,7 @@
 // useChat — Chat State Management Hook
 // =============================================================================
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { Message, AgentType } from "@/types";
 import { chatStorage } from "@/services/storage";
 import { agentClient } from "@/services/AgentClient";
@@ -15,11 +15,13 @@ function generateId(): string {
 export function useChat(agentId: AgentType) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
 
-  // Load chat history when agent changes
+  // Load chat history when agent changes.
   useEffect(() => {
     const saved = chatStorage.getMessages(agentId);
+    // Carga inicial desde localStorage: patrón intencional y seguro para
+    // hidratación SSR (el servidor renderiza [] y el cliente rehidrata).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMessages(saved);
   }, [agentId]);
 
@@ -73,7 +75,7 @@ export function useChat(agentId: AgentType) {
               : msg
           )
         );
-      } catch (error) {
+      } catch {
         // Update placeholder with error
         setMessages((prev) =>
           prev.map((msg) =>

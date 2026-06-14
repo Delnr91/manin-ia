@@ -6,7 +6,7 @@
 // To connect to real backend: update ENGINE_BASE_URL in .env.local
 // =============================================================================
 
-import type { AgentResponse, AgentType, AGENTS as AgentsList, WeatherResponse } from "@/types";
+import type { AgentResponse, AgentType, WeatherResponse } from "@/types";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -30,7 +30,7 @@ const MOCK_RESPONSES: Record<AgentType, (msg: string) => AgentResponse> = {
     success: true,
     message: `🧠 **Engrama registrado.**\n\nHe procesado tu nota y extraído los puntos clave:\n\n- Contexto capturado: ${msg.slice(0, 80)}...\n- Timestamp: ${new Date().toLocaleString("es-CL")}\n\nEn modo producción, esto se sincronizaría con tu servidor de engramas.`,
   }),
-  weather: (msg: string) => ({
+  weather: () => ({
     success: true,
     message: `🌤️ **Clima actual — Antofagasta**\n\n- Temperatura: 18°C (sensación 16°C)\n- Humedad: 72%\n- Viento: 15 km/h SO\n- UV: 3 (moderado)\n\n💡 *Consejo: Lleva una chaqueta ligera. La brisa costera puede sentirse fresca al atardecer.*\n\n_Conecta el Engine para datos en tiempo real via wttr.in._`,
     data: {
@@ -51,10 +51,6 @@ const MOCK_RESPONSES: Record<AgentType, (msg: string) => AgentResponse> = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
 async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
