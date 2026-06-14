@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { agentClient } from "./AgentClient";
 
 describe("AgentClient (modo mock)", () => {
-  it("está offline cuando no hay NEXT_PUBLIC_ENGINE_URL", () => {
+  it("está offline (mock) cuando el Engine no está conectado", () => {
     expect(agentClient.isOffline).toBe(true);
   });
 
@@ -16,9 +16,5 @@ describe("AgentClient (modo mock)", () => {
     const res = await agentClient.getWeather("Antofagasta");
     expect(res.success).toBe(true);
     expect(res.data?.weather.city).toBe("Antofagasta");
-  });
-
-  it("healthCheck devuelve true en modo mock", async () => {
-    expect(await agentClient.healthCheck()).toBe(true);
   });
 });

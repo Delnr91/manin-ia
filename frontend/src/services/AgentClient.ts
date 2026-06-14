@@ -1,25 +1,17 @@
 // =============================================================================
 // manin-ia — Agent Client Service
 // =============================================================================
-// Handles all communication with the n8n backend engine.
-// Currently uses mock responses for development.
-// To connect to real backend: update ENGINE_BASE_URL in .env.local
+// El cliente habla con el proxy interno (/api/agent/:id), que del lado servidor
+// reenvía al Engine (n8n). Si el Engine no está conectado, cae en modo mock.
 // =============================================================================
 
 import type { AgentResponse, AgentType, WeatherResponse } from "@/types";
 
-// ---------------------------------------------------------------------------
-// Configuration
-// ---------------------------------------------------------------------------
-const ENGINE_BASE_URL =
-  process.env.NEXT_PUBLIC_ENGINE_URL || "https://n8n.yourdomain.com";
-
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
-
-const MOCK_MODE = !process.env.NEXT_PUBLIC_ENGINE_URL;
+// Si NEXT_PUBLIC_ENGINE_CONNECTED !== "true", la app corre en modo simulado.
+const MOCK_MODE = process.env.NEXT_PUBLIC_ENGINE_CONNECTED !== "true";
 
 // ---------------------------------------------------------------------------
-// Mock Responses (Development)
+// Mock Responses (cuando no hay Engine conectado)
 // ---------------------------------------------------------------------------
 const MOCK_RESPONSES: Record<AgentType, (msg: string) => AgentResponse> = {
   productivity: (msg: string) => ({
@@ -48,9 +40,6 @@ const MOCK_RESPONSES: Record<AgentType, (msg: string) => AgentResponse> = {
   }),
 };
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -59,104 +48,42 @@ async function delay(ms: number): Promise<void> {
 // Agent Client
 // ---------------------------------------------------------------------------
 class AgentClient {
-  private baseUrl: string;
-  private apiKey: string;
-  private isMock: boolean;
-
-  constructor() {
-    this.baseUrl = ENGINE_BASE_URL;
-    this.apiKey = API_KEY;
-    this.isMock = MOCK_MODE;
-  }
+  private isMock = MOCK_MODE;
 
   /**
-   * Send a message to a specific agent and get a response.
+   * Envía un mensaje a un agente. En modo real llama al proxy /api/agent/:id,
+   * que reenvía al Engine (n8n → Ollama). En modo mock responde simulado.
    */
-  async sendMessage(
-    agentId: AgentType,
-    message: string,
-    context?: Record<string, unknown>
-  ): Promise<AgentResponse> {
+  async sendMessage(agentId: AgentType, message: string): Promise<AgentResponse> {
     if (this.isMock) {
-      // Simulate network delay for realistic UX
-      await delay(800 + Math.random() * 1200);
+      await delay(700 + Math.random() * 800);
       return MOCK_RESPONSES[agentId](message);
     }
 
-    const endpoint = this.getEndpoint(agentId);
-
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const res = await fetch(`/api/agent/${agentId}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(this.apiKey && { "X-API-Key": this.apiKey }),
-        },
-        body: JSON.stringify({
-          message,
-          timestamp: Date.now(),
-          ...context,
-        }),
-        signal: AbortSignal.timeout(30000), // 30s timeout for LLM
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
       });
-
-      if (!response.ok) {
-        throw new Error(`Engine responded with ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`[AgentClient] Error calling ${agentId}:`, error);
+      return (await res.json()) as AgentResponse;
+    } catch {
       return {
         success: false,
         message:
-          error instanceof Error
-            ? `❌ Error de conexión: ${error.message}`
-            : "❌ Error de conexión con el Engine. Verifica que el servidor esté activo.",
+          "❌ Error de conexión con el agente. Verifica que la app y el Engine estén activos.",
       };
     }
   }
 
-  /**
-   * Get weather for a specific city.
-   */
+  /** Atajo para el agente del clima. */
   async getWeather(city: string): Promise<WeatherResponse> {
-    return this.sendMessage("weather", city, { city }) as Promise<WeatherResponse>;
+    return this.sendMessage("weather", city) as Promise<WeatherResponse>;
   }
 
-  /**
-   * Check if the engine is reachable.
-   */
-  async healthCheck(): Promise<boolean> {
-    if (this.isMock) return true;
-
-    try {
-      const response = await fetch(`${this.baseUrl}/healthz`, {
-        signal: AbortSignal.timeout(5000),
-      });
-      return response.ok;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Check if we're running in mock mode.
-   */
+  /** ¿Estamos en modo mock (sin Engine)? */
   get isOffline(): boolean {
     return this.isMock;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Private
-  // ---------------------------------------------------------------------------
-  private getEndpoint(agentId: AgentType): string {
-    const endpoints: Record<AgentType, string> = {
-      productivity: "/webhook/agent-productivity",
-      engram: "/webhook/agent-engram",
-      weather: "/webhook/agent-weather",
-    };
-    return endpoints[agentId];
   }
 }
 

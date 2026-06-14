@@ -1,11 +1,16 @@
 "use client";
 
-import BackgroundVideo from "@/components/BackgroundVideo";
+import dynamic from "next/dynamic";
 import AgentSidebar from "@/components/AgentSidebar";
 import ChatPanel from "@/components/chat/ChatPanel";
 import { useAgent } from "@/hooks/useAgent";
 import { useChat } from "@/hooks/useChat";
 import { agentClient } from "@/services/AgentClient";
+
+// La escena 3D (WebGL) solo corre en el cliente → carga dinámica sin SSR.
+const SaturnGarden = dynamic(() => import("@/components/garden/SaturnGarden"), {
+  ssr: false,
+});
 
 export default function Home() {
   const { activeAgent, setActiveAgent, currentAgent, agents } = useAgent();
@@ -16,7 +21,7 @@ export default function Home() {
 
   return (
     <>
-      <BackgroundVideo />
+      <SaturnGarden />
       <div className="flex h-screen w-full">
         <AgentSidebar
           agents={agents}

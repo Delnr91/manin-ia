@@ -1,3 +1,5 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { Agent, Message } from "@/types";
 import { AgentIcon } from "@/components/icons";
 
@@ -69,8 +71,14 @@ export default function MessageBubble({
         >
           {message.isStreaming && !message.content ? (
             <TypingDots />
-          ) : (
+          ) : isUser ? (
             <span className="whitespace-pre-wrap">{message.content}</span>
+          ) : (
+            <div className="md">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
+            </div>
           )}
         </div>
       </div>
