@@ -1,9 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  /* Paleta "Saturno de noche": fondo profundo y texto cristal. */
-  --background: #05060f;
-  --foreground: #e8eaf2;
+  /* Paleta Manin-IA: lapislázuli + celadón + cristal (con destellos dorados). */
+  --lapis: #3b82c4; /* azul lapislázuli (acento principal) */
+  --lapis-deep: #1e4a82; /* lapis profundo */
+  --celadon: #86c8a8; /* verde celadón (acento secundario) */
+  --gold: #e3c06a; /* oro (destellos del lapislázuli) */
+
+  --background: #0a1426; /* noche lapislázuli */
+  --foreground: #e6efe9; /* cristal con tinte celadón */
 }
 
 @theme inline {
@@ -19,23 +24,23 @@ body {
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(ellipse at top, #102a4a 0%, #0a1426 55%, #070f1e 100%);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   overflow: hidden; /* el lienzo controla su propio scroll */
 }
 
-/* Scrollbar discreta acorde al tema cristal. */
+/* Scrollbar discreta en tono celadón. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  scrollbar-color: rgba(134, 200, 168, 0.3) transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(134, 200, 168, 0.3);
   border-radius: 9999px;
 }
 
@@ -101,7 +106,7 @@ body {
   font-style: italic;
 }
 .md a {
-  color: #93c5fd;
+  color: var(--celadon);
   text-decoration: underline;
 }
 .md h1,

@@ -23,7 +23,7 @@ export const AGENTS: Agent[] = [
     description: "Agenda reuniones, crea recordatorios y gestiona tu calendario",
     icon: "Calendar",
     endpoint: "/webhook/agent-productivity",
-    color: "#00d4ff",
+    color: "#3b82c4",
   },
   {
     id: "engram",
@@ -31,7 +31,7 @@ export const AGENTS: Agent[] = [
     description: "Resume tu jornada y gestiona tus engramas de conocimiento",
     icon: "Brain",
     endpoint: "/webhook/agent-engram",
-    color: "#a855f7",
+    color: "#86c8a8",
   },
   {
     id: "weather",
@@ -39,7 +39,7 @@ export const AGENTS: Agent[] = [
     description: "Consulta el clima y recibe consejos personalizados",
     icon: "CloudSun",
     endpoint: "/webhook/agent-weather",
-    color: "#22c55e",
+    color: "#e3c06a",
   },
 ];
 

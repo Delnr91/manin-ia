@@ -15,7 +15,7 @@ export default function ChatInput({
   onSend,
   disabled,
   placeholder = "Escribe a la granja…",
-  accent = "#7c5cff",
+  accent = "#3b82c4",
 }: ChatInputProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);

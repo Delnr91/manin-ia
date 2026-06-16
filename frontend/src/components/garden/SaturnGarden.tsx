@@ -75,8 +75,9 @@ function Orchid() {
   const geometry = usePetalGeometry();
 
   // Paleta iridiscente: cian → violeta → magenta.
-  const outer = ["#22d3ee", "#38bdf8", "#818cf8", "#a855f7", "#d946ef", "#06b6d4"];
-  const inner = ["#67e8f9", "#c084fc", "#f0abfc", "#7dd3fc", "#e879f9", "#a5b4fc"];
+  // Lapislázuli → celadón → cristal.
+  const outer = ["#1e4a82", "#2f6fb0", "#3b82c4", "#5aa0d6", "#86c8a8", "#a7d9c4"];
+  const inner = ["#86c8a8", "#a7d9c4", "#cfeae0", "#6fb0d0", "#9ed8c2", "#3b82c4"];
 
   useFrame((state, delta) => {
     if (!group.current) return;
@@ -146,18 +147,18 @@ function Saturn() {
       <mesh>
         <sphereGeometry args={[1.6, 48, 48]} />
         <meshStandardMaterial
-          color="#caa472"
-          emissive="#3a2c18"
-          emissiveIntensity={0.4}
-          roughness={0.9}
+          color="#3b6ea5"
+          emissive="#102a4a"
+          emissiveIntensity={0.5}
+          roughness={0.85}
         />
       </mesh>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <ringGeometry args={[2.1, 3.2, 80]} />
         <meshBasicMaterial
-          color="#d8c39a"
+          color="#e3c06a"
           transparent
-          opacity={0.45}
+          opacity={0.5}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -168,12 +169,12 @@ function Saturn() {
 function Scene() {
   return (
     <>
-      <color attach="background" args={["#05060f"]} />
-      <fog attach="fog" args={["#05060f", 8, 22]} />
+      <color attach="background" args={["#0a1426"]} />
+      <fog attach="fog" args={["#0a1426", 8, 22]} />
 
-      <ambientLight intensity={0.35} />
-      <pointLight position={[5, 5, 5]} intensity={60} color="#a5b4fc" />
-      <pointLight position={[-6, -3, 2]} intensity={40} color="#f0abfc" />
+      <ambientLight intensity={0.4} />
+      <pointLight position={[5, 5, 5]} intensity={60} color="#7fb6d8" />
+      <pointLight position={[-6, -3, 2]} intensity={40} color="#86c8a8" />
 
       <Stars radius={60} depth={40} count={3000} factor={4} saturation={0} fade speed={1} />
       <Saturn />
@@ -208,7 +209,7 @@ export default function SaturnGarden() {
   }, []);
 
   return (
-    <div className="fixed inset-0 -z-10 bg-[#05060f]">
+    <div className="fixed inset-0 -z-10 bg-[#0a1426]">
       <Canvas
         camera={{ position: [0, 0, 7], fov: 50 }}
         dpr={[1, 1.75]}
@@ -217,7 +218,7 @@ export default function SaturnGarden() {
         <Scene />
       </Canvas>
       {/* Velo sutil para que el texto del chat siga legible. */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#05060f]/85 via-[#05060f]/30 to-[#05060f]/55" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#0a1426]/85 via-[#0a1426]/30 to-[#0a1426]/55" />
     </div>
   );
 }

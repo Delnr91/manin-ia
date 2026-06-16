@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildAgentPrompt } from "@/lib/personas";
 
 // =============================================================================
 // Proxy de agentes — el navegador llama AQUÍ (mismo origen), y esta ruta
@@ -40,7 +41,8 @@ export async function POST(
     const res = await fetch(`${ENGINE_URL}/webhook/agent-${agentId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
+      // Anteponemos la persona del agente al mensaje del usuario.
+      body: JSON.stringify({ message: buildAgentPrompt(agentId, message) }),
       // Ollama en CPU puede tardar bastante; damos margen amplio.
       signal: AbortSignal.timeout(115_000),
     });
